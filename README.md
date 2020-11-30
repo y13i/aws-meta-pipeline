@@ -15,6 +15,6 @@ aws cloudformation deploy \
   --parameter-overrides "FullRepositoryId=${yourGithubUsername}/aws-meta-pipeline"
 ```
 
-3. Then open [Connections](https://console.aws.amazon.com/codesuite/settings/connections) and make the connection `AVAILABLE`.
+3. Open [Connections](https://console.aws.amazon.com/codesuite/settings/connections) and make the connection `AVAILABLE`.
 
-4. Modify `template.cfn.json`, commit and push it. Then pipeline applies the change.
+4. Modify `template.cfn.json`, commit and push it. Then the pipeline applies the change.
