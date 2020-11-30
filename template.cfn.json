@@ -253,6 +253,9 @@
           ]
         }
       }
+    },
+    "someBucket": {
+      "Type": "AWS::S3::Bucket"
     }
   }
 }
