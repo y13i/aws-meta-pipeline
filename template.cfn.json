@@ -45,6 +45,11 @@
           "Statement": [
             {
               "Effect": "Allow",
+              "Action": ["codestar-connections:UseConnection"],
+              "Resource": { "Ref": "GithubConnection" }
+            },
+            {
+              "Effect": "Allow",
               "Action": [
                 "cloudformation:CreateStack",
                 "cloudformation:DeleteStack",
