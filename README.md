@@ -16,3 +16,5 @@ aws cloudformation deploy \
 ```
 
 3. Then open [Connections](https://console.aws.amazon.com/codesuite/settings/connections) and make the connection `AVAILABLE`.
+
+4. Modify `template.cfn.json`, commit and push it. Then pipeline applies the change.
