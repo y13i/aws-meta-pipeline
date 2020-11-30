@@ -7,11 +7,6 @@
     "BranchName": {
       "Type": "String",
       "Default": "main"
-    },
-    "GitHubWebHookSecret": {
-      "Type": "String",
-      "Description": "",
-      "NoEcho": true
     }
   },
   "Resources": {
