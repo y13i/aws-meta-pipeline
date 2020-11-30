@@ -66,7 +66,7 @@
             },
             {
               "Effect": "Allow",
-              "Action": ["s3:GetObject", "s3:PutObject"],
+              "Action": ["s3:*"],
               "Resource": { "Fn::Sub": "${ArtifactBucket.Arn}/*" }
             },
             {
@@ -143,7 +143,23 @@
                   "Capabilities": "CAPABILITY_IAM",
                   "RoleArn": { "Fn::GetAtt": ["CfnRole", "Arn"] },
                   "StackName": { "Ref": "AWS::StackName" },
-                  "TemplatePath": "appSource::template.cfn.json"
+                  "TemplatePath": "appSource::template.cfn.json",
+                  "ParameterOverrides": {
+                    "Fn::Join": [
+                      "",
+                      [
+                        "{",
+                        {
+                          "Fn::Sub": "\"FullRepositoryId\": \"${FullRepositoryId}\""
+                        },
+                        ",",
+                        {
+                          "Fn::Sub": "\"BranchName\": \"${BranchName}\""
+                        },
+                        "}"
+                      ]
+                    ]
+                  }
                 },
                 "InputArtifacts": [{ "Name": "appSource" }]
               }
