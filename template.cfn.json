@@ -100,7 +100,7 @@
             "Name": "Source",
             "Actions": [
               {
-                "Name": { "Ref": "FullRepositoryId" },
+                "Name": "GitHub",
                 "ActionTypeId": {
                   "Category": "Source",
                   "Owner": "AWS",
@@ -126,7 +126,7 @@
             "Name": "MetaDeploy",
             "Actions": [
               {
-                "Name": { "Fn::Sub": "Itself" },
+                "Name": "CloudFormation",
                 "ActionTypeId": {
                   "Category": "Deploy",
                   "Owner": "AWS",
