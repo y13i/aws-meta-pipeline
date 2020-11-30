@@ -1,0 +1,8 @@
+{
+  "json.schemas": [
+    {
+      "fileMatch": ["*.cfn.json"],
+      "url": "https://cfn-schema.y13i.com/schema"
+    }
+  ]
+}

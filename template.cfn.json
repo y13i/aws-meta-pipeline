@@ -1,0 +1,242 @@
+{
+  "Parameters": {
+    "FullRepositoryId": {
+      "Type": "String",
+      "Description": "GitHub repository reference, for example y13i/aws-meta-pipeline."
+    },
+    "BranchName": {
+      "Type": "String",
+      "Default": "main"
+    },
+    "GitHubWebHookSecret": {
+      "Type": "String",
+      "Description": "",
+      "NoEcho": true
+    }
+  },
+  "Resources": {
+    "GithubConnection": {
+      "Type": "AWS::CodeStarConnections::Connection",
+      "Properties": {
+        "ConnectionName": {
+          "Fn::Sub": "${AWS::StackName}-${AWS::Region}"
+        },
+        "ProviderType": "GitHub"
+      }
+    },
+    "PipelineRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": { "Fn::Sub": "codepipeline.${AWS::URLSuffix}" }
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "ManagedPolicyArns": [{ "Ref": "PipelineRolePolicy" }]
+      }
+    },
+    "PipelineRolePolicy": {
+      "Type": "AWS::IAM::ManagedPolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "cloudformation:CreateStack",
+                "cloudformation:DeleteStack",
+                "cloudformation:DescribeStacks",
+                "cloudformation:UpdateStack",
+                "cloudformation:CreateChangeSet",
+                "cloudformation:DeleteChangeSet",
+                "cloudformation:DescribeChangeSet",
+                "cloudformation:ExecuteChangeSet",
+                "cloudformation:SetStackPolicy",
+                "cloudformation:ValidateTemplate"
+              ],
+              "Resource": "*"
+            },
+            {
+              "Effect": "Allow",
+              "Action": ["s3:GetObject", "s3:PutObject"],
+              "Resource": { "Fn::Sub": "${ArtifactBucket.Arn}/*" }
+            },
+            {
+              "Effect": "Allow",
+              "Action": ["iam:PassRole"],
+              "Resource": { "Fn::GetAtt": ["CfnRole", "Arn"] }
+            }
+          ]
+        }
+      }
+    },
+    "ArtifactBucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "LifecycleConfiguration": {
+          "Rules": [
+            {
+              "ExpirationInDays": 1,
+              "Status": "Enabled"
+            }
+          ]
+        }
+      }
+    },
+    "Pipeline": {
+      "Type": "AWS::CodePipeline::Pipeline",
+      "Properties": {
+        "Name": { "Ref": "AWS::StackName" },
+        "RoleArn": { "Fn::GetAtt": ["PipelineRole", "Arn"] },
+        "ArtifactStore": {
+          "Type": "S3",
+          "Location": { "Ref": "ArtifactBucket" }
+        },
+        "Stages": [
+          {
+            "Name": "Source",
+            "Actions": [
+              {
+                "Name": { "Ref": "FullRepositoryId" },
+                "ActionTypeId": {
+                  "Category": "Source",
+                  "Owner": "AWS",
+                  "Provider": "CodeStarSourceConnection",
+                  "Version": "1"
+                },
+                "Configuration": {
+                  "ConnectionArn": {
+                    "Ref": "GithubConnection"
+                  },
+                  "FullRepositoryId": {
+                    "Ref": "FullRepositoryId"
+                  },
+                  "BranchName": {
+                    "Ref": "BranchName"
+                  }
+                },
+                "OutputArtifacts": [{ "Name": "appSource" }]
+              }
+            ]
+          },
+          {
+            "Name": "MetaDeploy",
+            "Actions": [
+              {
+                "Name": { "Fn::Sub": "Itself" },
+                "ActionTypeId": {
+                  "Category": "Deploy",
+                  "Owner": "AWS",
+                  "Provider": "CloudFormation",
+                  "Version": "1"
+                },
+                "Configuration": {
+                  "ActionMode": "CREATE_UPDATE",
+                  "Capabilities": "CAPABILITY_IAM",
+                  "RoleArn": { "Fn::GetAtt": ["CfnRole", "Arn"] },
+                  "StackName": { "Ref": "AWS::StackName" },
+                  "TemplatePath": "appSource::template.cfn.json"
+                },
+                "InputArtifacts": [{ "Name": "appSource" }]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "CfnRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": { "Fn::Sub": "cloudformation.${AWS::URLSuffix}" }
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "ManagedPolicyArns": ["arn:aws:iam::aws:policy/AdministratorAccess"]
+      }
+    },
+    "PipelineNotificationRule": {
+      "Type": "AWS::CodeStarNotifications::NotificationRule",
+      "Properties": {
+        "Name": { "Ref": "AWS::StackName" },
+        "Status": "ENABLED",
+        "DetailType": "FULL",
+        "Resource": {
+          "Fn::Sub": "arn:aws:codepipeline:${AWS::Region}:${AWS::AccountId}:${Pipeline}"
+        },
+        "EventTypeIds": [
+          "codepipeline-pipeline-action-execution-succeeded",
+          "codepipeline-pipeline-action-execution-failed",
+          "codepipeline-pipeline-action-execution-canceled",
+          "codepipeline-pipeline-action-execution-started",
+          "codepipeline-pipeline-stage-execution-started",
+          "codepipeline-pipeline-stage-execution-succeeded",
+          "codepipeline-pipeline-stage-execution-resumed",
+          "codepipeline-pipeline-stage-execution-canceled",
+          "codepipeline-pipeline-stage-execution-failed",
+          "codepipeline-pipeline-pipeline-execution-failed",
+          "codepipeline-pipeline-pipeline-execution-canceled",
+          "codepipeline-pipeline-pipeline-execution-started",
+          "codepipeline-pipeline-pipeline-execution-resumed",
+          "codepipeline-pipeline-pipeline-execution-succeeded",
+          "codepipeline-pipeline-pipeline-execution-superseded",
+          "codepipeline-pipeline-manual-approval-failed",
+          "codepipeline-pipeline-manual-approval-needed",
+          "codepipeline-pipeline-manual-approval-succeeded"
+        ],
+        "Targets": [
+          {
+            "TargetType": "SNS",
+            "TargetAddress": {
+              "Ref": "NotificationTopic"
+            }
+          }
+        ]
+      }
+    },
+    "NotificationTopic": {
+      "Type": "AWS::SNS::Topic",
+      "Properties": {
+        "TopicName": { "Ref": "AWS::StackName" }
+      }
+    },
+    "NotificationTopicPolicy": {
+      "Type": "AWS::SNS::TopicPolicy",
+      "Properties": {
+        "Topics": [
+          {
+            "Ref": "NotificationTopic"
+          }
+        ],
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": ["codestar-notifications.amazonaws.com"]
+              },
+              "Action": "sns:Publish",
+              "Resource": { "Ref": "NotificationTopic" }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
