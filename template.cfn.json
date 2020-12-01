@@ -153,6 +153,10 @@
                       [
                         "{",
                         {
+                          "Fn::Sub": "\"CfnRoleArn\": \"${CfnRoleArn}\""
+                        },
+                        ",",
+                        {
                           "Fn::Sub": "\"FullRepositoryId\": \"${FullRepositoryId}\""
                         },
                         ",",
