@@ -13,7 +13,7 @@ aws cloudformation deploy \
   --template template.cfn.json \
   --capabilities CAPABILITY_IAM \
   --role-arn ${yourCfnRoleArn} \
-  --parameter-overrides FullRepositoryId=${yourGithubUsername}/aws-meta-pipeline CfnRole=${yourCfnRoleArn}
+  --parameter-overrides FullRepositoryId=${yourGithubUsername}/aws-meta-pipeline CfnRoleArn=${yourCfnRoleArn}
 ```
 
 4. Open [Connections](https://console.aws.amazon.com/codesuite/settings/connections) and make the connection `AVAILABLE`.
