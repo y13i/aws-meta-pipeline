@@ -8,12 +8,12 @@
 
 ```
 aws cloudformation deploy \
-  --region "us-east-1" \
-  --stack-name "aws-meta-pipeline" \
-  --template "template.cfn.json" \
-  --capabilities "CAPABILITY_IAM" \
-  --role-arn "${yourCfnRoleArn}" \
-  --parameter-overrides "FullRepositoryId=${yourGithubUsername}/aws-meta-pipeline,CfnRole=${yourCfnRoleArn}"
+  --region us-east-1 \
+  --stack-name aws-meta-pipeline \
+  --template template.cfn.json \
+  --capabilities CAPABILITY_IAM \
+  --role-arn ${yourCfnRoleArn} \
+  --parameter-overrides FullRepositoryId=${yourGithubUsername}/aws-meta-pipeline CfnRole=${yourCfnRoleArn}
 ```
 
 4. Open [Connections](https://console.aws.amazon.com/codesuite/settings/connections) and make the connection `AVAILABLE`.
