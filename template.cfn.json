@@ -1,5 +1,8 @@
 {
   "Parameters": {
+    "CfnRoleArn": {
+      "Type": "String"
+    },
     "FullRepositoryId": {
       "Type": "String",
       "Description": "GitHub repository reference, for example y13i/aws-meta-pipeline."
@@ -72,7 +75,7 @@
             {
               "Effect": "Allow",
               "Action": ["iam:PassRole"],
-              "Resource": { "Fn::GetAtt": ["CfnRole", "Arn"] }
+              "Resource": { "Ref": "CfnRoleArn" }
             }
           ]
         }
@@ -141,7 +144,7 @@
                 "Configuration": {
                   "ActionMode": "CREATE_UPDATE",
                   "Capabilities": "CAPABILITY_IAM",
-                  "RoleArn": { "Fn::GetAtt": ["CfnRole", "Arn"] },
+                  "RoleArn": { "Ref": "CfnRoleArn" },
                   "StackName": { "Ref": "AWS::StackName" },
                   "TemplatePath": "appSource::template.cfn.json",
                   "ParameterOverrides": {
@@ -166,24 +169,6 @@
             ]
           }
         ]
-      }
-    },
-    "CfnRole": {
-      "Type": "AWS::IAM::Role",
-      "Properties": {
-        "AssumeRolePolicyDocument": {
-          "Version": "2012-10-17",
-          "Statement": [
-            {
-              "Effect": "Allow",
-              "Principal": {
-                "Service": { "Fn::Sub": "cloudformation.${AWS::URLSuffix}" }
-              },
-              "Action": "sts:AssumeRole"
-            }
-          ]
-        },
-        "ManagedPolicyArns": ["arn:aws:iam::aws:policy/AdministratorAccess"]
       }
     },
     "PipelineNotificationRule": {

@@ -3,8 +3,8 @@
 ## Usage
 
 1. Fork this repo.
-
-2. Deploy stack.
+2. Create a [CloudFormation service role](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-iam-servicerole.html).
+3. Deploy stack.
 
 ```
 aws cloudformation deploy \
@@ -12,9 +12,9 @@ aws cloudformation deploy \
   --stack-name "aws-meta-pipeline" \
   --template "template.cfn.json" \
   --capabilities "CAPABILITY_IAM" \
-  --parameter-overrides "FullRepositoryId=${yourGithubUsername}/aws-meta-pipeline"
+  --role-arn "${yourCfnRoleArn}" \
+  --parameter-overrides "FullRepositoryId=${yourGithubUsername}/aws-meta-pipeline,CfnRole=${yourCfnRoleArn}"
 ```
 
-3. Then open [Connections](https://console.aws.amazon.com/codesuite/settings/connections) and make the connection `AVAILABLE`.
-
-4. Modify `template.cfn.json`, commit and push it. Then pipeline applies the change.
+4. Then open [Connections](https://console.aws.amazon.com/codesuite/settings/connections) and make the connection `AVAILABLE`.
+5. Modify `template.cfn.json`, commit and push it. Then pipeline applies the change.
